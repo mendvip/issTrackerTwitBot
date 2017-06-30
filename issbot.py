@@ -20,10 +20,12 @@ class MyStreamListener(tweepy.StreamListener):
             username = status.user.screen_name
             status_id = status.id
             reply = 'thank you. we are still in testing.'
-            print 'test'
-            #api.update_status
+            api.update_status(status=reply, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True)
 
 myStreamListener = MyStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 
 myStream.filter(track=['@issTrackerPy', '@isstrackerpy'], async=True)
+
+#add error handling
+#prevent reply on retweeted status 
