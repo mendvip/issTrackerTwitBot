@@ -7,20 +7,15 @@ auth.set_access_token(access_token, access_token_secret)
 
 api = tweepy.API(auth)
 
-# public_tweets = api.home_timeline()
-# for tweet in public_tweets:
-#     # tweet_json_string = json.dumps(tweet._json, indent=4)
-#     # tweet_json_object = json.loads(tweet_json_string)
-#     # print tweet_json_string
-#     print tweet.text
-
 class MyStreamListener(tweepy.StreamListener):
     def on_status(self, status):
-        if not status.retweeted:
+        if status.text[:2] != 'RT':
             username = status.user.screen_name
             status_id = status.id
+            status_text = status.text
+            print status_text
             reply = 'thank you. we are still in testing.'
-            api.update_status(status=reply, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True)
+            # api.update_status(status=reply, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True)
 
 myStreamListener = MyStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
@@ -28,4 +23,4 @@ myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 myStream.filter(track=['@issTrackerPy', '@isstrackerpy'], async=True)
 
 #add error handling
-#prevent reply on retweeted status 
+#prevent reply on retweeted status
