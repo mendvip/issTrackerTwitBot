@@ -13,14 +13,17 @@ class MyStreamListener(tweepy.StreamListener):
             username = status.user.screen_name
             status_id = status.id
             status_text = status.text
-            print status_text
+            coords = status_text[14:].split(',')
+            if coords[1][0] == ' ':
+                coords[1] == coords[1][1:]
+            print coords[1][0]
             reply = 'thank you. we are still in testing.'
             # api.update_status(status=reply, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True)
 
 myStreamListener = MyStreamListener()
 myStream = tweepy.Stream(auth = api.auth, listener=myStreamListener)
 
-myStream.filter(track=['@issTrackerPy', '@isstrackerpy'], async=True)
+myStream.filter(track=['@issTrackerPy', '@isstrackerpy'])
 
 #add error handling
 #prevent reply on retweeted status
