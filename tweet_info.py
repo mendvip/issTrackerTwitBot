@@ -24,11 +24,11 @@ public_tweets = api.home_timeline()
 #     for tweet in timeline:
 #         print tweet.text
 
-
-# parameters = {'lat': 27.9506, 'lon': -82.4572}
 parameters = {'lat': 80, 'lon': 80}
+# parameters = {'lat': 27.9506, 'lon': -82.4572}
 response_pass = requests.get('http://api.open-notify.org/iss-pass.json', params=parameters)
-# data = response_pass.json()
 print response_pass.content
-print '500 Internal Server Error' in response_pass.content
+# data = response_pass.json()
+# print data['message']
+# print '500 Internal Server Error' in response_pass.content
 # print data
