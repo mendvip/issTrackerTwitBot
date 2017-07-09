@@ -1,6 +1,8 @@
 import tweepy
 import json
 from keys import *
+import requests
+import datetime
 
 auth = tweepy.OAuthHandler(api_key, api_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -19,16 +21,16 @@ class MyStreamListener(tweepy.StreamListener):
                     coords = status_text.split(',')
                     if coords[1][0] == ' ':
                         coords[1] = coords[1][1:]
+                    reply = getPassTime(coords)
                 else:
-                    print 'please use correct format. Ex: 27.95, 82.45'
+                    reply = 'please use correct format. Ex: 27.95, -82.45'
 
             elif stringOrNum(status_text) == 'string':
-                print 'this is a string'
+                reply = 'this is a string'
             else:
-                print 'please give valid coordinates or city name.'
+                reply = 'please give valid coordinates or city name.'
 
-            reply = 'thank you. we are still in testing.'
-            # api.update_status(status=reply, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True)
+            api.update_status(status=reply, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True)
 
 def isRetweet(tweet):
     if tweet[:2] == 'RT':
@@ -43,16 +45,27 @@ def stringOrNum(tweet):
     except ValueError:
         return 'string'
 
-def getPassTimes(coords):
+def getPassTime(coords):
     parameters = {'lat': coords[0], 'lon': coords[1]}
     response_pass = requests.get('http://api.open-notify.org/iss-pass.json', params=parameters)
     try:
         data = response_pass.json()
         message = data['message']
         if message == 'success':
-            response = data['response']
+            response = data['response'][0]
+            risetime = response['risetime']
+            duration = float(response['duration'])/100
+            risetimeval = datetime.datetime.fromtimestamp(risetime)
+            risetimeread = risetimeval.strftime('%m/%d/%Y %I:%M:%S %p')
+            return '{0} for {1} seconds'.format(risetimeread, duration)
+        else:
+            return data['reason']
+
     except ValueError:
-        print 'please use correct format'
+        # pIndex = response_pass.content.find('<p>')
+        # periodIndex = response_pass.content.find('.', 42)
+        # return response_pass.content[pIndex+3 : periodIndex]
+        return 'The ISS will not be passing over that location in the near future'
 
 
 
