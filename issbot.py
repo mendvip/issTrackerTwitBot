@@ -1,6 +1,7 @@
 import tweepy
 import json
 from keys import *
+from weatherKey import *
 import requests
 import datetime
 
@@ -44,6 +45,14 @@ def stringOrNum(tweet):
         return 'num'
     except ValueError:
         return 'string'
+
+def cityToCoords(city):
+    response_weather = requests.get('http://api.openweathermap.org/data/2.5/weather?q={0}&APPID={1}'.format(city, weatherKey))
+    # try:
+    data = response_weather.json()
+    lat = data['coord']['lat']
+    lon = data['coord']['lon']
+    coords = [lat, lon]
 
 def getPassTime(coords):
     parameters = {'lat': coords[0], 'lon': coords[1]}
