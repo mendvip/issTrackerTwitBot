@@ -27,7 +27,12 @@ class MyStreamListener(tweepy.StreamListener):
                     reply = 'please use correct format. Ex: 27.95, -82.45'
 
             elif stringOrNum(status_text) == 'string':
-                reply = 'this is a string'
+                no_spaces = status_text.replace(' ','')
+                test = cityToCoords(no_spaces)
+                if type(test) is list:
+                    reply = getPassTime(test)
+                else:
+                    reply = test
             else:
                 reply = 'please give valid coordinates or city name.'
 
@@ -48,11 +53,15 @@ def stringOrNum(tweet):
 
 def cityToCoords(city):
     response_weather = requests.get('http://api.openweathermap.org/data/2.5/weather?q={0}&APPID={1}'.format(city, weatherKey))
-    # try:
     data = response_weather.json()
-    lat = data['coord']['lat']
-    lon = data['coord']['lon']
-    coords = [lat, lon]
+    if data['cod'] == 200:
+        lat = data['coord']['lat']
+        lon = data['coord']['lon']
+        coords = [lat, lon]
+        return coords
+    else:
+        error = 'The location you provided was not found'
+        return error
 
 def getPassTime(coords):
     parameters = {'lat': coords[0], 'lon': coords[1]}
@@ -66,7 +75,7 @@ def getPassTime(coords):
             duration = float(response['duration'])/100
             risetimeval = datetime.datetime.fromtimestamp(risetime)
             risetimeread = risetimeval.strftime('%m/%d/%Y %I:%M:%S %p')
-            return '{0} for {1} seconds'.format(risetimeread, duration)
+            return '{0} for {1:.1f} seconds'.format(risetimeread, duration)
         else:
             return data['reason']
 
