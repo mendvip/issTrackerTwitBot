@@ -4,6 +4,7 @@ from keys import *
 from weatherKey import *
 import requests
 import datetime
+import time
 
 auth = tweepy.OAuthHandler(api_key, api_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -36,7 +37,11 @@ class MyStreamListener(tweepy.StreamListener):
             else:
                 reply = 'please give valid coordinates or city name.'
 
-            api.update_status(status=reply, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True)
+            try:
+                api.update_status(status=reply, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True)
+            except tweepy.TweepError:
+                time.sleep(60*2)
+
 
 def isRetweet(tweet):
     if tweet[:2] == 'RT':
@@ -75,7 +80,9 @@ def getPassTime(coords):
             duration = float(response['duration'])/100
             risetimeval = datetime.datetime.fromtimestamp(risetime)
             risetimeread = risetimeval.strftime('%m/%d/%Y %I:%M:%S %p')
-            return '{0} for {1:.1f} seconds'.format(risetimeread, duration)
+            lat = parameters['lat']
+            lon = parameters['lon']
+            return '({0}, {1}){2}{2}{3} for {4:.1f} seconds'.format(lat, lon, '\n', risetimeread, duration)
         else:
             return data['reason']
 
