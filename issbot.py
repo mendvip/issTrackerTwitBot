@@ -62,13 +62,17 @@ def cityToCoords(city):
     if data['cod'] == 200:
         lat = data['coord']['lat']
         lon = data['coord']['lon']
+        #cityname = data['name']
         coords = [lat, lon]
+        print data['name']
+        # pass city name to get pass times
+        # coords = [lat, lon, cityname]
         return coords
     else:
         error = 'The location you provided was not found'
         return error
 
-def getPassTime(coords):
+def getPassTime(coords, **kwargs):
     parameters = {'lat': coords[0], 'lon': coords[1]}
     response_pass = requests.get('http://api.open-notify.org/iss-pass.json', params=parameters)
     try:

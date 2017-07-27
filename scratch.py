@@ -9,8 +9,8 @@ import datetime
 #research async
 #test deploy to pythonanywhere
 
-response_weather = requests.get('http://api.openweathermap.org/data/2.5/weather?q=testing&APPID={}'.format(weatherKey))
-print response_weather.json()
+response_weather = requests.get('http://api.openweathermap.org/data/2.5/weather?q=tampa&APPID={}'.format(weatherKey))
+# print response_weather.json()
 print json.dumps(response_weather.json(), indent=4)
 data = response_weather.json()
 if data['cod'] == 200:
