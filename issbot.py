@@ -31,7 +31,12 @@ class MyStreamListener(tweepy.StreamListener):
                 no_spaces = status_text.replace(' ','')
                 test = cityToCoords(no_spaces)
                 if type(test) is list:
-                    reply = getPassTime(test)
+                    if len(test) == 3:
+                        coords = test[:2]
+                        cityname = test[2]
+                        reply = getPassTime(coords, cityname=cityname)
+                    else:
+                        reply = getPassTime(test)
                 else:
                     reply = test
             else:
@@ -62,11 +67,10 @@ def cityToCoords(city):
     if data['cod'] == 200:
         lat = data['coord']['lat']
         lon = data['coord']['lon']
-        #cityname = data['name']
-        coords = [lat, lon]
-        print data['name']
-        # pass city name to get pass times
-        # coords = [lat, lon, cityname]
+        cityname = data['name']
+        # coords = [lat, lon]
+        print cityname
+        coords = [lat, lon, cityname]
         return coords
     else:
         error = 'The location you provided was not found'
@@ -86,7 +90,11 @@ def getPassTime(coords, **kwargs):
             risetimeread = risetimeval.strftime('%m/%d/%Y %I:%M:%S %p')
             lat = parameters['lat']
             lon = parameters['lon']
-            return '({0}, {1}){2}{2}{3} for {4:.1f} seconds'.format(lat, lon, '\n', risetimeread, duration)
+            if kwargs and 'cityname' in kwargs:
+                tweet = '{5}{2}({0}, {1}){2}{3} for {4:.1f} seconds'.format(lat, lon, '\n', risetimeread, duration, kwargs['cityname'])
+            else:
+                tweet = '({0}, {1}){2}{3} for {4:.1f} seconds'.format(lat, lon, '\n', risetimeread, duration)
+            return tweet
         else:
             return data['reason']
 
