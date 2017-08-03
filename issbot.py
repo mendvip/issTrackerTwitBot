@@ -16,37 +16,48 @@ class MyStreamListener(tweepy.StreamListener):
         if not isRetweet(status.text):
             username = status.user.screen_name
             status_id = status.id
-            status_text = status.text[14:]
+            print len(status.text)
+            if len(status.text) > 14:
+                status_text = status.text[14:]
 
-            if stringOrNum(status_text) == 'num':
-                if ',' in status.text:
-                    coords = status_text.split(',')
-                    if coords[1][0] == ' ':
-                        coords[1] = coords[1][1:]
-                    reply = getPassTime(coords)
-                else:
-                    reply = 'please use correct format. Ex: 27.95, -82.45'
-
-            elif stringOrNum(status_text) == 'string':
-                no_spaces = status_text.replace(' ','')
-                test = cityToCoords(no_spaces)
-                if type(test) is list:
-                    if len(test) == 3:
-                        coords = test[:2]
-                        cityname = test[2]
-                        reply = getPassTime(coords, cityname=cityname)
+                if stringOrNum(status_text) == 'num':
+                    if ',' in status.text:
+                        coords = status_text.split(',')
+                        if coords[1][0] == ' ':
+                            coords[1] = coords[1][1:]
+                        reply = getPassTime(coords)
                     else:
-                        reply = getPassTime(test)
-                else:
-                    reply = test
-            else:
-                reply = 'please give valid coordinates or city name.'
+                        reply = 'please use correct format. Ex: 27.95, -82.45'
 
+                elif stringOrNum(status_text) == 'string':
+                    no_spaces = status_text.replace(' ','')
+                    coords_and_city = cityToCoords(no_spaces)
+                    if status_text[0] == '(':
+                        reply = 'please do not use parentheses'
+                    elif type(coords_and_city) is list:
+                        if len(coords_and_city) == 3:
+                            coords = coords_and_city[:2]
+                            cityname = coords_and_city[2]
+                            reply = getPassTime(coords, cityname=cityname)
+                        else:
+                            reply = getPassTime(coords_and_city)
+                    else:
+                        reply = coords_and_city
+                else:
+                    reply = 'please give valid coordinates or city name.'
+            else:
+                reply = 'please provide valid location'
             try:
                 api.update_status(status=reply, in_reply_to_status_id=status_id, auto_populate_reply_metadata=True)
             except tweepy.TweepError:
                 time.sleep(60*2)
 
+
+def notBlank(tweet):
+    if len(tweet) > 0:
+        return True
+    else:
+        return False
 
 def isRetweet(tweet):
     if tweet[:2] == 'RT':
@@ -68,8 +79,6 @@ def cityToCoords(city):
         lat = data['coord']['lat']
         lon = data['coord']['lon']
         cityname = data['name']
-        # coords = [lat, lon]
-        print cityname
         coords = [lat, lon, cityname]
         return coords
     else:
@@ -91,17 +100,14 @@ def getPassTime(coords, **kwargs):
             lat = parameters['lat']
             lon = parameters['lon']
             if kwargs and 'cityname' in kwargs:
-                tweet = '{5}{2}({0}, {1}){2}{3} for {4:.1f} seconds'.format(lat, lon, '\n', risetimeread, duration, kwargs['cityname'])
+                tweet = '{5}{2}({0}, {1}){2}{3} UTC for {4:.1f} seconds'.format(lat, lon, '\n', risetimeread, duration, kwargs['cityname'])
             else:
-                tweet = '({0}, {1}){2}{3} for {4:.1f} seconds'.format(lat, lon, '\n', risetimeread, duration)
+                tweet = '({0}, {1}){2}{3} UTC for {4:.1f} seconds'.format(lat, lon, '\n', risetimeread, duration)
             return tweet
         else:
             return data['reason']
 
     except ValueError:
-        # pIndex = response_pass.content.find('<p>')
-        # periodIndex = response_pass.content.find('.', 42)
-        # return response_pass.content[pIndex+3 : periodIndex]
         return 'The ISS will not be passing over that location in the near future'
 
 
